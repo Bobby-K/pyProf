@@ -167,6 +167,68 @@ def GetFeries(win):
 import wx
 
 #############################################################################################
+def GetEtablissements3(win):
+#############################################################################################
+
+    import requests
+    import json
+    import operator
+    
+    ###################
+    # Collèges
+    ###################
+    urlColleges = "https://data.education.gouv.fr/api/records/1.0/search/?dataset=fr-en-annuaire-education&q=&format=json&pretty_print=true&rows=10000&refine.type_etablissement=Coll%C3%A8ge&fields=libelle_academie,,type_etablissement,nom_etablissement,nom_commune"
+    print("\nRécupération des collèges depuis l'annuaire de l'éducation nationale...")
+    urlResponse = requests.get(urlColleges)
+    if urlResponse.ok :
+        print("OK")
+        parsedData = json.loads(urlResponse.text)
+        print("\nNombre de collèges trouvés :", parsedData["nhits"])
+        print("\nAjout des collèges à la liste d'établissements...")   
+        listeEtablissements = []
+        for i in range(parsedData["nhits"]) :
+            college  = []
+            college.append(parsedData["records"][i]["fields"]["libelle_academie"])
+            college.append(parsedData["records"][i]["fields"]["type_etablissement"])
+            college.append(parsedData["records"][i]["fields"]["nom_commune"])
+            college.append(parsedData["records"][i]["fields"]["nom_etablissement"])
+            listeEtablissements.append(college)
+    else :
+        print("\nErreur! Impossible de récupérer les données des collèges.")
+        print("Vérifiez votre connexion à Internet.")
+
+    ###################
+    # Lycée
+    ###################
+    urlLycees = "https://data.education.gouv.fr/api/records/1.0/search/?dataset=fr-en-annuaire-education&q=&format=json&pretty_print=true&rows=10000&refine.type_etablissement=Lyc%C3%A9e&fields=libelle_academie,type_etablissement,nom_etablissement,nom_commune"
+    print("\nRécupération des lycées depuis l'annuaire de l'éducation nationale...")
+    urlResponse = requests.get(urlLycees)
+    if urlResponse.ok :
+        print("OK")
+        parsedData = json.loads(urlResponse.text)
+        print("\nNombre de lycées trouvés :", parsedData["nhits"])
+        print("\nCréation de la liste de lycées...")   
+        for i in range(parsedData["nhits"]) :
+            lycee  = []
+            lycee.append(parsedData["records"][i]["fields"]["libelle_academie"])
+            lycee.append(parsedData["records"][i]["fields"]["type_etablissement"])
+            lycee.append(parsedData["records"][i]["fields"]["nom_commune"])
+            lycee.append(parsedData["records"][i]["fields"]["nom_etablissement"])
+            listeEtablissements.append(lycee)
+    else :
+        print("Erreur! Impossible de récupérer les données des lycées.")
+        print("Vérifiez votre connexion à Internet.")
+    
+    
+    print("\nTri de la liste des établissements par académie, par type d'établissement, par ville, puis par nom d'établissement...")  
+    listeEtablissements.sort(key = operator.itemgetter(0, 1, 2, 3))
+
+#     parsedData = pd.read_json(urlResponse.text,orient='index')
+#     print(parsedData)
+#     parsedData.to_csv('colleges.csv')
+    return listeEtablissements
+
+#############################################################################################
 def GetEtablissements2(win):
     
     from bs4 import BeautifulSoup
