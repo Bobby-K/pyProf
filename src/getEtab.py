@@ -166,9 +166,10 @@ def GetFeries(win):
 
 import wx
 
-#############################################################################################
+#===============================================================================
+# GetEtablissements3
+#===============================================================================
 def GetEtablissements3(win):
-#############################################################################################
 
     import requests
     import json
@@ -177,7 +178,8 @@ def GetEtablissements3(win):
     ###################
     # Collèges
     ###################
-    urlColleges = "https://data.education.gouv.fr/api/records/1.0/search/?dataset=fr-en-annuaire-education&q=&format=json&pretty_print=true&rows=10000&refine.type_etablissement=Coll%C3%A8ge&fields=libelle_academie,,type_etablissement,nom_etablissement,nom_commune"
+    urlColleges = "https://data.education.gouv.fr/api/records/1.0/search/?dataset=fr-en-annuaire-education&q=&format=json&pretty_print=true&rows=10000&refine.type_etablissement=Coll%C3%A8ge&fields=libelle_academie,type_etablissement,nom_etablissement,nom_commune"
+#     urlColleges = "https://data.education.gouv.fr/api/records/1.0/search/?dataset=fr-en-annuaire-education&q=&rows=10000&facet=libelle_academie&refine.type_etablissement=Coll%C3%A8ge&fields=libelle_academie,type_etablissement,nom_etablissement,nom_commune"
     print("\nRécupération des collèges depuis l'annuaire de l'éducation nationale...")
     urlResponse = requests.get(urlColleges)
     if urlResponse.ok :
@@ -186,13 +188,22 @@ def GetEtablissements3(win):
         print("\nNombre de collèges trouvés :", parsedData["nhits"])
         print("\nAjout des collèges à la liste d'établissements...")   
         listeEtablissements = []
+#         listeEtablissements = {}
         for i in range(parsedData["nhits"]) :
             college  = []
             college.append(parsedData["records"][i]["fields"]["libelle_academie"])
             college.append(parsedData["records"][i]["fields"]["type_etablissement"])
-            college.append(parsedData["records"][i]["fields"]["nom_commune"])
             college.append(parsedData["records"][i]["fields"]["nom_etablissement"])
-            listeEtablissements.append(college)
+            college.append(parsedData["records"][i]["fields"]["nom_commune"])
+            listeEtablissements.append(college)               
+#             listeEtablissements.update([{"academie": parsedData["records"][i]["fields"]["libelle_academie"]}][{"type": "Collège"}][{"établissemnt": college}])
+#             listeEtablissements[parsedData["records"][i]["fields"]["libelle_academie"]][parsedData["records"][i]["fields"]["type_etablissement"]] = [parsedData["records"][i]["fields"]["nom_etablissement"]]
+#             listeEtablissements.update([{"academie": parsedData["records"][i]["fields"]["libelle_academie"], {"nature": parsedData["records"][i]["fields"]["type_etablissement"], {"etablissement": college}}})
+#             if parsedData["records"][i]["fields"]["libelle_academie"] in listeEtablissements:
+#                 listeEtablissements.update({parsedData["records"][i]["fields"]["libelle_academie"]:{parsedData["records"][i]["fields"]["type_etablissement"]:{len(listeEtablissements[parsedData["records"][i]["fields"]["libelle_academie"]]['Collège'])+1: {"nom": parsedData["records"][i]["fields"]["nom_etablissement"], "commune": parsedData["records"][i]["fields"]["nom_commune"]}}}})     
+#             else:
+#                 listeEtablissements.update({parsedData["records"][i]["fields"]["libelle_academie"]:{parsedData["records"][i]["fields"]["type_etablissement"]:{0: {"nom": parsedData["records"][i]["fields"]["nom_etablissement"], "commune": parsedData["records"][i]["fields"]["nom_commune"]}}}})
+    
     else :
         print("\nErreur! Impossible de récupérer les données des collèges.")
         print("Vérifiez votre connexion à Internet.")
@@ -207,25 +218,51 @@ def GetEtablissements3(win):
         print("OK")
         parsedData = json.loads(urlResponse.text)
         print("\nNombre de lycées trouvés :", parsedData["nhits"])
-        print("\nCréation de la liste de lycées...")   
+        print("\nCréation de la liste de lycées...")  
         for i in range(parsedData["nhits"]) :
             lycee  = []
             lycee.append(parsedData["records"][i]["fields"]["libelle_academie"])
             lycee.append(parsedData["records"][i]["fields"]["type_etablissement"])
-            lycee.append(parsedData["records"][i]["fields"]["nom_commune"])
             lycee.append(parsedData["records"][i]["fields"]["nom_etablissement"])
+            lycee.append(parsedData["records"][i]["fields"]["nom_commune"])
             listeEtablissements.append(lycee)
     else :
         print("Erreur! Impossible de récupérer les données des lycées.")
         print("Vérifiez votre connexion à Internet.")
     
     
-    print("\nTri de la liste des établissements par académie, par type d'établissement, par ville, puis par nom d'établissement...")  
-    listeEtablissements.sort(key = operator.itemgetter(0, 1, 2, 3))
+    #Tri de la liste des établissements par académie, par type d'établissement, par ville, puis par nom d'établissement 
+    listeEtablissements.sort(key = operator.itemgetter(0, 1, 3, 2))
+    
+    #Création d'un arbre XML
+    root = ET.Element("Etablissements")
+    academie = ET.SubElement(root,"Académie")
+    academie.set("Nom",listeEtablissements[0][0])
+    etab = ET.SubElement(academie,"Etablissement")
+    etab.set("Type",listeEtablissements[0][1])
+    el = ET.SubElement(etab,listeEtablissements[0][1])
+    el.set("Nom",listeEtablissements[0][2])
+    el.set("Commune",listeEtablissements[0][3])               
+    
+    for i in range(1,len(listeEtablissements)):
+        if listeEtablissements[i-1][0] != listeEtablissements[i][0]: # créer une nouvelle branche "Académie"
+            academie = ET.SubElement(root,"Académie")
+            academie.set("Nom",listeEtablissements[i][0])
+            if listeEtablissements[i-1][1] != listeEtablissements[i][1]: #créer une nouvelle branche "Etablissement"
+                etab = ET.SubElement(academie,"Etablissement")
+                etab.set("Type",listeEtablissements[i][1])
+        #ajouter l'établissement courant
+        el = ET.SubElement(etab,listeEtablissements[i][1])
+        el.set("Nom",listeEtablissements[i][2])
+        el.set("Commune",listeEtablissements[i][3])
+    
+    #Ecriture du fichier XML
+#     nomF = os.path.join(path, "Etablissements.xml")
+    nomF = "/home/bk/Eclipse/workspace/pyProf_workspace/Etablissements.xml"
 
-#     parsedData = pd.read_json(urlResponse.text,orient='index')
-#     print(parsedData)
-#     parsedData.to_csv('colleges.csv')
+    indent(root)
+    ET.ElementTree(root).write(nomF, encoding="UTF-8", )#, encoding = "utf-8")
+         
     return listeEtablissements
 
 #############################################################################################
@@ -833,7 +870,7 @@ def indent(elem, level=0):
 
 
 def SauvEtablissements(win, path):
-    liste_etab = GetEtablissements(win)
+    liste_etab = GetEtablissements3(win)
     if len(liste_etab) > 0:
         nomF = os.path.join(path, "Etablissements.xml")
 #         fichier = open(nomF, 'w', encoding = "utf-8")
