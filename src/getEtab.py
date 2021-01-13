@@ -202,64 +202,20 @@ def GetEtablissements(win):
         return 0
     #===========================================================================
 
-#     
-#     if win is not None:
-#         dlg = myProgressDialog("Recherche des établissements", message, len(listeEtablissements)*2, parent=win)
-#         dlg.Show()
-#         count = 1
-
-    ###################
-    # Collèges
-    ###################
-
-#     dlg.update(count, "Récupération des collèges depuis l'annuaire de l'éducation nationale...")
-    urlColleges = "https://data.education.gouv.fr/api/records/1.0/search/?dataset=fr-en-annuaire-education&q=&format=json&pretty_print=true&rows=10000&refine.type_etablissement=Coll%C3%A8ge&fields=libelle_academie,type_etablissement,nom_etablissement,nom_commune"
+    #Récupération des collèges puis des lycées
+    urlBase = "https://data.education.gouv.fr/api/records/1.0/search/"
+    urlRequete = "&q="
+    urlFormat = "&format=json&pretty_print=true"
+    urlRows = "&rows=10000"
+    urlRefine = "&refine.type_etablissement=Coll%C3%A8ge"
+    urlFields = "&fields=libelle_academie,type_etablissement,nom_etablissement,nom_commune"
+    
+    urlColleges = urlBase + urlRequete + urlFormat + urlRows + urlRefine + urlFields
     listeColleges = GetEtablissementsParType(urlColleges, "collèges", listeEtablissements)
     
-    urlLycees = "https://data.education.gouv.fr/api/records/1.0/search/?dataset=fr-en-annuaire-education&q=&format=json&pretty_print=true&rows=10000&refine.type_etablissement=Lyc%C3%A9e&fields=libelle_academie,type_etablissement,nom_etablissement,nom_commune"
-    listeLycees = GetEtablissementsParType(urlLycees, "lycées", listeEtablissements)
-
-#     dlg.update(count, "Lien utilisé : " + urlColleges)  
-#     urlResponse = requests.get(urlColleges)
-#     if urlResponse.ok :
-#         dlg.update(count, "Requête réalisée avec succès")
-#         parsedData = json.loads(urlResponse.text)
-#         dlg.update(count, "Nombre de collèges trouvés :" + parsedData["nhits"])
-#         print("\nAjout des collèges à la liste d'établissements...")   
-#         for i in range(parsedData["nhits"]) :
-#             college  = []
-#             college.append(parsedData["records"][i]["fields"]["libelle_academie"])
-#             college.append(parsedData["records"][i]["fields"]["type_etablissement"])
-#             college.append(parsedData["records"][i]["fields"]["nom_etablissement"])
-#             college.append(parsedData["records"][i]["fields"]["nom_commune"])
-#             listeEtablissements.append(college)               
-#     else :
-#         print("\nErreur! Impossible de récupérer les données des collèges.")
-#         print("Vérifiez votre connexion à Internet.")
-
-    ###################
-    # Lycée
-    ###################
-    
-#     urlLycees = "https://data.education.gouv.fr/api/records/1.0/search/?dataset=fr-en-annuaire-education&q=&format=json&pretty_print=true&rows=10000&refine.type_etablissement=Lyc%C3%A9e&fields=libelle_academie,type_etablissement,nom_etablissement,nom_commune"
-#     print("\nRécupération des lycées depuis l'annuaire de l'éducation nationale...")
-#     urlResponse = requests.get(urlLycees)
-#     if urlResponse.ok :
-#         print("OK")
-#         parsedData = json.loads(urlResponse.text)
-#         print("\nNombre de lycées trouvés :", parsedData["nhits"])
-#         print("\nCréation de la liste de lycées...")  
-#         for i in range(parsedData["nhits"]) :
-#             lycee  = []
-#             lycee.append(parsedData["records"][i]["fields"]["libelle_academie"])
-#             lycee.append(parsedData["records"][i]["fields"]["type_etablissement"])
-#             lycee.append(parsedData["records"][i]["fields"]["nom_etablissement"])
-#             lycee.append(parsedData["records"][i]["fields"]["nom_commune"])
-#             listeEtablissements.append(lycee)
-#     else :
-#         print("Erreur! Impossible de récupérer les données des lycées.")
-#         print("Vérifiez votre connexion à Internet.")
-    
+    urlRefine = "&refine.type_etablissement=Lyc%C3%A9e"
+    urlLycees = urlBase + urlRequete + urlFormat + urlRows + urlRefine + urlFields
+    listeLycees = GetEtablissementsParType(urlLycees, "lycées", listeEtablissements)  
     
     #Tri de la liste des établissements par académie (0), par type d'établissement(1), par ville(3), puis par nom d'établissement(2) 
     listeEtablissements.sort(key = operator.itemgetter(0, 1, 3, 2))
