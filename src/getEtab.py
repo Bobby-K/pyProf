@@ -870,7 +870,7 @@ def indent(elem, level=0):
 
 
 def SauvEtablissements(win, path):
-    liste_etab = GetEtablissements3(win)
+    liste_etab = GetEtablissements(win)
     if len(liste_etab) > 0:
         nomF = os.path.join(path, "Etablissements.xml")
 #         fichier = open(nomF, 'w', encoding = "utf-8")
