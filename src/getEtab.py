@@ -203,19 +203,19 @@ def GetEtablissements(win):
     #===========================================================================
 
     #Récupération des collèges puis des lycées
-    urlBase = "https://data.education.gouv.fr/api/records/1.0/search/"
+    urlBase = "https://data.education.gouv.fr/api/records/1.0/search/?dataset=fr-en-annuaire-education"
     urlRequete = "&q="
     urlFormat = "&format=json&pretty_print=true"
     urlRows = "&rows=10000"
     urlRefine = "&refine.type_etablissement=Coll%C3%A8ge"
     urlFields = "&fields=libelle_academie,type_etablissement,nom_etablissement,nom_commune"
-    
+
     urlColleges = urlBase + urlRequete + urlFormat + urlRows + urlRefine + urlFields
-    listeColleges = GetEtablissementsParType(urlColleges, "collèges", listeEtablissements)
+    GetEtablissementsParType(urlColleges, "collèges", listeEtablissements)
     
     urlRefine = "&refine.type_etablissement=Lyc%C3%A9e"
     urlLycees = urlBase + urlRequete + urlFormat + urlRows + urlRefine + urlFields
-    listeLycees = GetEtablissementsParType(urlLycees, "lycées", listeEtablissements)  
+    GetEtablissementsParType(urlLycees, "lycées", listeEtablissements)  
     
     #Tri de la liste des établissements par académie (0), par type d'établissement(1), par ville(3), puis par nom d'établissement(2) 
     listeEtablissements.sort(key = operator.itemgetter(0, 1, 3, 2))
