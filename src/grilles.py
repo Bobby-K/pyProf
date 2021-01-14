@@ -167,7 +167,7 @@ def getXlApp():
 
 
 
-def getExentionExcel():
+def getExtensionExcel():
     global EXT_EXCEL
     import pythoncom
     pythoncom.CoInitialize()
@@ -193,7 +193,7 @@ def getExentionExcel():
 EXT_EXCEL = None
 def get_th_xls():
     try:
-        th_xls = threading.Thread(None, getExentionExcel, None)
+        th_xls = threading.Thread(None, getExtensionExcel, None)
         th_xls.start()
         return th_xls
     except:

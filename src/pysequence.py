@@ -14570,7 +14570,7 @@ class Eleve(Personne):
                                                   "Excel occupé", wx.YES_NO | wx.ICON_WARNING)
                         retCode = dialog.ShowModal()
                         if retCode == wx.ID_YES:
-                            grilles.getExentionExcel()
+                            grilles.getExtensionExcel()
                         else:
                             return
                         
